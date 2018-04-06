@@ -1,0 +1,19 @@
+[package]
+name = "devbox"
+version = "0.1.0"
+authors = ["Sonny Scroggin <sonny@scrogg.in>"]
+
+[dependencies]
+clap = "2"
+rayon = "0.9"
+serde = "1.0"
+serde_derive = "1.0"
+toml = "0.4.5"
+prettytable-rs = "0.6.7"
+failure = "0.1.1"
+failure_derive = "0.1.1"
+colored = "1.6.0"
+
+[[bin]]
+name = "devbox"
+path = "src/bin/devbox.rs"
