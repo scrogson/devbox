@@ -45,7 +45,7 @@ pub fn build(args: &ArgMatches) -> Result<()> {
         let _ = clone_services(&mut project);
         let _ = build_services(&mut project);
         let _ = create_network(&project);
-        let _ = create_volumes(&mut project);
+        let _ = create_volumes(&project);
         let _ = pull_latest_images();
         let _ = build_images();
 
@@ -233,12 +233,12 @@ fn create_volumes(project: &Project) -> Result<()> {
     project
         .volumes
         .par_iter()
-        .map(create_volume)
+        .map(|s| create_volume(s.as_str()))
         .collect::<Vec<Result<()>>>();
     Ok(())
 }
 
-fn create_volume(name: &String) -> Result<()> {
+fn create_volume(name: &str) -> Result<()> {
     println!("Creating volume: {}", name);
     let _ = docker()
         .stdout(Stdio::null())

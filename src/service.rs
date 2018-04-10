@@ -18,21 +18,18 @@ use task::Task;
 const OVERRIDE_PATH: &str = ".devbox/docker-compose.override.yml";
 const TOML_PATH: &str = ".devbox/devbox.toml";
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Service {
+    pub hooks: Option<BTreeMap<String, Vec<Task>>>,
     pub name: String,
-    pub repo: String,
-    path: Option<PathBuf>,
-    #[serde(skip)]
-    pub(crate) project_name: String,
-    #[serde(skip)]
-    tasks: Option<Vec<Task>>,
-    #[serde(skip)]
-    hooks: Option<BTreeMap<String, Vec<Task>>>,
+    pub repo: Option<String>,
+    pub path: Option<PathBuf>,
+    pub project_name: String,
+    pub tasks: Option<Vec<Task>>,
 }
 
 impl Service {
-    pub fn rehydrate_from_devbox_toml(&mut self) -> Result<()> {
+    fn rehydrate_from_devbox_toml(&mut self) -> Result<()> {
         let mut contents = String::new();
 
         if let Ok(mut file) = File::open(self.devbox_toml_file()) {
@@ -92,7 +89,8 @@ impl Service {
 
     pub fn build(&mut self) -> Result<()> {
         if self.devbox_compose_file().exists() {
-            self.run_lifecycle_hooks("before-build");
+            self.rehydrate_from_devbox_toml()?;
+            self.run_lifecycle_hooks("before-build")?;
 
             let _ = cmd::new("docker-compose", self)
                 .arg("build")
@@ -100,7 +98,7 @@ impl Service {
                 .spawn()?
                 .wait();
 
-            self.run_lifecycle_hooks("after-build");
+            self.run_lifecycle_hooks("after-build")?;
 
             return Ok(());
         }
@@ -120,23 +118,27 @@ impl Service {
             eprintln!("{} already exists, fetching updates...", self.name);
             self.update_repo()
         } else {
-            let repo_url = format!("git@github.com:{}", self.repo);
-
-            let _ = Command::new("git")
-                .arg("clone")
-                .arg(repo_url)
-                .arg(self.source_path())
-                .spawn()?
-                .wait();
-            Ok(())
+            match &self.repo {
+                Some(ref repo) => {
+                    let _ = Command::new("git")
+                        .arg("clone")
+                        .arg(repo)
+                        .arg(self.source_path())
+                        .spawn()?
+                        .wait();
+                    Ok(())
+                }
+                None => Err(format_err!("No repository configured for {}", self.name)),
+            }
         }
     }
 
     pub fn update(&mut self) -> Result<()> {
         if self.path_exists() {
-            self.run_lifecycle_hooks("before-update");
+            self.rehydrate_from_devbox_toml()?;
+            self.run_lifecycle_hooks("before-update")?;
             self.update_repo()?;
-            self.run_lifecycle_hooks("after-update");
+            self.run_lifecycle_hooks("after-update")?;
 
             Ok(())
         } else {
@@ -231,7 +233,6 @@ impl Service {
     }
 
     pub fn tasks(&mut self) -> Result<Vec<Task>> {
-        self.rehydrate_from_devbox_toml()?;
         match self.tasks {
             Some(ref v) => Ok(v.clone()),
             None => Ok(Vec::new()),
@@ -239,21 +240,23 @@ impl Service {
     }
 
     fn hooks(&mut self) -> Result<BTreeMap<String, Vec<Task>>> {
-        self.rehydrate_from_devbox_toml()?;
         match self.hooks {
             Some(ref v) => Ok(v.clone()),
             None => Ok(BTreeMap::new()),
         }
     }
 
-    fn run_lifecycle_hooks(&mut self, lifecycle: &str) {
+    fn run_lifecycle_hooks(&mut self, lifecycle: &str) -> Result<()> {
         println!("{} Running {} hooks", "INFO".green(), lifecycle);
+        self.rehydrate_from_devbox_toml()?;
         let tasks = self.tasks_for_hook(lifecycle);
         if !tasks.is_empty() {
             for task in tasks {
                 let _ = self.run_task(&task);
             }
         }
+
+        Ok(())
     }
 
     fn tasks_for_hook(&mut self, name: &str) -> Vec<Task> {

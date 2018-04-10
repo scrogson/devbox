@@ -22,21 +22,12 @@ const TOML_TEMPLATE: &str = r#"# Example devbox project configuration
 # Service definitions allow devbox to know how to clone or find the source code.
 #
 # * `name` - The name of the service
-# * `repo` - The source repository path on GitHub (i.e. "scrogson/devbox")
-# * `path` - The path to the source on disk.
+# * `git` - The source of a git repository
+# * `path` - The path to the source on disk (optional)
 #
-# [[services]]
-# name = "service1"
-# repo = "<github-org-or-user>/<repo>"
-#
-# [[services]]
-# name = "service2"
-# repo = "<github-org-or-user>/<repo>"
-# path = "/path/to/source"
-
-volumes = []
-
-[[services]]
+# [services]
+# service1 = { git = "https://github.com/scrogson/service1" }
+# service2 = { path = "/path/to/service2" }
 "#;
 
 const COMPOSE_YAML_TEMPLATE: &str = r#"# This is an example docker-compose config file
@@ -93,44 +84,66 @@ services:
       - example
 "#;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct Project {
-    #[serde(skip)]
     pub docker_compose_file: PathBuf,
-
-    #[serde(skip)]
     pub name: String,
-
-    pub volumes: Vec<String>,
     pub services: Vec<Service>,
+    pub volumes: Vec<String>,
 }
 
 impl Project {
-    pub fn new(name: &str) -> Result<Self> {
-        let toml_config = toml_config_path(name)?;
-        let yaml_config = yaml_config_path(name)?;
+    pub fn new(project_name: &str) -> Result<Self> {
+        let toml_config_path = toml_config_path(project_name)?;
+        let yaml_config_path = yaml_config_path(project_name)?;
+        let value = parse_toml_config(toml_config_path)?;
 
-        let mut contents = String::new();
-        File::open(toml_config)
-            .context("Couldn't find devbox project config")?
-            .read_to_string(&mut contents)
-            .context("Unable to read config file")?;
+        let services = match value.get("services") {
+            Some(services) => services
+                .as_table()
+                .expect("services must be in table format")
+                .iter()
+                .map(|(name, attributes)| {
+                    let repo = attributes
+                        .get("git")
+                        .map(|s| s.as_str().unwrap().to_owned());
+                    let path = attributes
+                        .get("path")
+                        .map(|s| PathBuf::from(s.as_str().unwrap()));
 
-        let mut project: Project =
-            toml::from_str(&contents).context("Error deserializing toml config")?;
+                    Service {
+                        hooks: None,
+                        name: name.to_owned(),
+                        path,
+                        project_name: project_name.to_owned(),
+                        repo,
+                        tasks: None,
+                    }
+                })
+                .collect(),
+            None => Vec::new(),
+        };
 
-        project.docker_compose_file = yaml_config;
-        project.name = name.to_owned();
+        let volumes = match value.get("volumes") {
+            Some(volumes) => volumes
+                .as_array()
+                .expect("volumes must be an array of strings")
+                .to_vec()
+                .iter()
+                .map(|s| s.as_str().unwrap().to_string())
+                .collect(),
+            None => Vec::new(),
+        };
 
-        project
-            .services
-            .iter_mut()
-            .for_each(|ref mut service| service.project_name = name.to_owned());
+        env::set_var("COMPOSE_PROJECT_NAME", &project_name);
+        env::set_var("COMPOSE_FILE", &yaml_config_path);
 
-        env::set_var("COMPOSE_PROJECT_NAME", &name);
-        env::set_var("COMPOSE_FILE", &project.docker_compose_file);
-
-        Ok(project)
+        Ok(Project {
+            docker_compose_file: yaml_config_path,
+            name: project_name.to_owned(),
+            services,
+            volumes,
+        })
     }
 
     pub fn find_service(&mut self, name: &str) -> Result<&mut Service> {
@@ -141,6 +154,19 @@ impl Project {
 
         Ok(service)
     }
+}
+
+fn parse_toml_config(path: PathBuf) -> Result<toml::Value> {
+    let mut contents = String::new();
+
+    File::open(path)
+        .context("Couldn't find devbox project config")?
+        .read_to_string(&mut contents)
+        .context("Unable to read config file")?;
+
+    let value = toml::from_str::<toml::Value>(&contents)?;
+
+    Ok(value)
 }
 
 pub fn init(name: &str) -> Result<()> {
