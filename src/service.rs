@@ -164,6 +164,8 @@ impl Service {
     }
 
     pub fn list_tasks(&mut self) -> Result<()> {
+        self.rehydrate_from_devbox_toml()?;
+
         let mut table = Table::new();
 
         table.set_format(*format::consts::FORMAT_CLEAN);
