@@ -86,6 +86,12 @@ fn new_project() -> App<'static, 'static> {
                 .required(true)
                 .help("The project name"),
         )
+        .arg(
+            Arg::with_name("git")
+                .long("git")
+                .takes_value(true)
+                .help("A URL to a git repository containing configuration for this project"),
+        )
 }
 
 fn ps() -> App<'static, 'static> {

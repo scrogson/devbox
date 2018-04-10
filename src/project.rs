@@ -2,8 +2,10 @@ use std::env;
 use std::fs::{DirBuilder, File, OpenOptions};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use failure::ResultExt;
+use tempdir::TempDir;
 use toml;
 
 use errors::*;
@@ -104,20 +106,24 @@ impl Project {
                 .expect("services must be in table format")
                 .iter()
                 .map(|(name, attributes)| {
-                    let repo = attributes
-                        .get("git")
-                        .map(|s| s.as_str().unwrap().to_owned());
+                    let hooks = None;
+                    let name = name.to_owned();
                     let path = attributes
                         .get("path")
                         .map(|s| PathBuf::from(s.as_str().unwrap()));
+                    let project_name = project_name.to_owned();
+                    let repo = attributes
+                        .get("git")
+                        .map(|s| s.as_str().unwrap().to_owned());
+                    let tasks = None;
 
                     Service {
-                        hooks: None,
-                        name: name.to_owned(),
+                        hooks,
+                        name,
                         path,
-                        project_name: project_name.to_owned(),
+                        project_name,
                         repo,
-                        tasks: None,
+                        tasks,
                     }
                 })
                 .collect(),
@@ -181,9 +187,40 @@ pub fn init(name: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn init_from_git(name: &str, git: &str) -> Result<()> {
+    let dir = TempDir::new("devbox")?;
+
+    let _ = Command::new("git")
+        .arg("clone")
+        .arg(git)
+        .arg(&dir.path())
+        .spawn()?
+        .wait();
+
+    let toml_path = &dir.path().join("config.toml");
+    let yaml_path = &dir.path().join("docker-compose.yml");
+    let toml_contents = read_file(&toml_path)?;
+    let yaml_contents = read_file(&yaml_path)?;
+
+    ensure_directory_exists(&devbox_dir(name)?);
+    create_file_if_not_exists(&toml_config_path(name)?, &toml_contents)?;
+    create_file_if_not_exists(&yaml_config_path(name)?, &yaml_contents)?;
+
+    dir.close()?;
+
+    Ok(())
+}
+
 pub fn devbox_dir(name: &str) -> Result<PathBuf> {
     let home = env::home_dir().ok_or_else(|| format_err!("unable to determine home directory"))?;
     Ok(home.join(".config").join("devbox").join(name))
+}
+
+fn read_file(path: &PathBuf) -> Result<String> {
+    let mut contents = String::new();
+    File::open(path)?.read_to_string(&mut contents)?;
+
+    Ok(contents)
 }
 
 fn toml_config_path(name: &str) -> Result<PathBuf> {

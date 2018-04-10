@@ -13,6 +13,7 @@ prettytable-rs = "0.6.7"
 failure = "0.1.1"
 failure_derive = "0.1.1"
 colored = "1.6.0"
+tempdir = "0.3.7"
 
 [[bin]]
 name = "devbox"

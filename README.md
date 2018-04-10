@@ -35,16 +35,15 @@ installation instructions.
 
 ### Installing devbox
 
-To get started, clone this repo, change into the directory, and run the following:
+To get `devbox` installed, simply run the following:
 
 ```shell
-$ cargo install
+$ cargo install --git https://github.com/scrogson/devbox --bin devbox
 ```
 
 This will compile `devbox` and move the resulting executable into `~/.cargo/bin`
 which you should have been instructed to put in your `$PATH` when installing
 Rust.
-
 
 ### Generating a Project
 

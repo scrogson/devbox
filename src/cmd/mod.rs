@@ -31,7 +31,10 @@ pub fn new<S: AsRef<OsStr>>(program: S, service: &Service) -> Command {
 pub fn new_project(args: &ArgMatches) -> Result<()> {
     let name = args.value_of("PROJECT")
         .ok_or_else(|| format_err!("Missing project name"))?;
-    project::init(name)
+    match args.value_of("git") {
+        Some(repo) => project::init_from_git(name, repo),
+        None => project::init(name)
+    }
 }
 
 pub fn build(args: &ArgMatches) -> Result<()> {
