@@ -117,7 +117,7 @@ impl Service {
             eprintln!("{} already exists, fetching updates...", self.name);
             self.update_repo()
         } else {
-            match &self.repo {
+            match self.repo {
                 Some(ref repo) => {
                     let _ = Command::new("git")
                         .arg("clone")
