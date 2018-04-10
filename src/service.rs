@@ -29,7 +29,7 @@ pub struct Service {
 }
 
 impl Service {
-    fn rehydrate_from_devbox_toml(&mut self) -> Result<()> {
+    pub fn rehydrate_from_devbox_toml(&mut self) -> Result<()> {
         let mut contents = String::new();
 
         if let Ok(mut file) = File::open(self.devbox_toml_file()) {
@@ -44,10 +44,10 @@ impl Service {
             return Ok(());
         }
 
-        let values = toml::from_str(&contents)?;
-
-        let _ = self.insert_tasks(&values);
-        let _ = self.insert_hooks(&values);
+        if let Ok(values) = toml::from_str(&contents) {
+            let _ = self.insert_tasks(&values);
+            let _ = self.insert_hooks(&values);
+        }
 
         Ok(())
     }
@@ -89,7 +89,6 @@ impl Service {
 
     pub fn build(&mut self) -> Result<()> {
         if self.devbox_compose_file().exists() {
-            self.rehydrate_from_devbox_toml()?;
             self.run_lifecycle_hooks("before-build")?;
 
             let _ = cmd::new("docker-compose", self)
@@ -135,7 +134,6 @@ impl Service {
 
     pub fn update(&mut self) -> Result<()> {
         if self.path_exists() {
-            self.rehydrate_from_devbox_toml()?;
             self.run_lifecycle_hooks("before-update")?;
             self.update_repo()?;
             self.run_lifecycle_hooks("after-update")?;
@@ -164,8 +162,6 @@ impl Service {
     }
 
     pub fn list_tasks(&mut self) -> Result<()> {
-        self.rehydrate_from_devbox_toml()?;
-
         let mut table = Table::new();
 
         table.set_format(*format::consts::FORMAT_CLEAN);
@@ -250,7 +246,6 @@ impl Service {
 
     fn run_lifecycle_hooks(&mut self, lifecycle: &str) -> Result<()> {
         println!("{} Running {} hooks", "INFO".green(), lifecycle);
-        self.rehydrate_from_devbox_toml()?;
         let tasks = self.tasks_for_hook(lifecycle);
         if !tasks.is_empty() {
             for task in tasks {

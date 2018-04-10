@@ -158,6 +158,8 @@ impl Project {
             .find(|ref mut service| service.name == name)
             .ok_or_else(|| ServiceNotFound(name.to_owned()))?;
 
+        let _ = service.rehydrate_from_devbox_toml();
+
         Ok(service)
     }
 }
