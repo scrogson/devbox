@@ -15,8 +15,8 @@ use errors::*;
 use project;
 use task::Task;
 
-const OVERRIDE_PATH: &str = ".devbox/docker-compose.override.yml";
-const TOML_PATH: &str = ".devbox/devbox.toml";
+const COMPOSE_PATH: &str = ".devbox/docker-compose.yml";
+const TOML_PATH: &str = ".devbox/config.toml";
 
 #[derive(Clone, Debug)]
 pub struct Service {
@@ -319,12 +319,12 @@ impl Service {
 
     pub fn devbox_compose_file(&self) -> PathBuf {
         match self.path {
-            Some(ref path) => path.join(OVERRIDE_PATH),
+            Some(ref path) => path.join(COMPOSE_PATH),
             None => project::devbox_dir(&self.project_name)
                 .expect("unable to determine devbox project directory")
                 .join("src")
                 .join(&self.name)
-                .join(OVERRIDE_PATH),
+                .join(COMPOSE_PATH),
         }
     }
 
