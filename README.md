@@ -1,21 +1,15 @@
-# Dev Box
+# devbox
 
-> Dev Box is responsible for bootstrapping your development environment.
+> devbox is responsible for bootstrapping your development environment.
 
-The repository will allow you to get all of our support services for local
-application development up and running quickly.
+## About devbox
 
-## About Dev Box
+`devbox` is a work in progress. It is an opinionated wrapper around `docker` and
+`docker-compose`.
 
-The Dev Box repository provides following support services for local development
-of Dev Box services:
-
-- Redis
-- MySQL
-- PostgreSQL
-- Kafka
-- Zookeeper
-- ElasticSearch
+`devbox` provides a way to get all of your services for local application
+development up and running quickly. Simply create a project and tell `devbox`
+what services are included, it will handle the rest.
 
 ## Installation
 
@@ -39,7 +33,7 @@ $ curl https://sh.rustup.rs -sSf | sh
 If you're running macOS you'll want visit the [Docker for Mac website](https://store.docker.com/editions/community/docker-ce-desktop-mac) for
 installation instructions.
 
-### Installing Devbox
+### Installing devbox
 
 To get started, clone this repo, change into the directory, and run the following:
 
@@ -51,8 +45,55 @@ This will compile `devbox` and move the resulting executable into `~/.cargo/bin`
 which you should have been instructed to put in your `$PATH` when installing
 Rust.
 
-This will also copy all the `devbox` configuration files into
-`~/.config/devbox`.
+
+### Generating a Project
+
+`devbox` works with projects. A project is a namespace to provide isolation
+between containers in other projects one might have.
+
+To generate a project, use the `new` subcommand with the name of our project like so:
+
+```shell
+$ devbox new example
+```
+
+This will generate a couple of files in your home directory:
+
+```shell
+$ tree ~/.config/devbox/ -L 2
+~/.config/devbox/
+└── example
+    ├── config.toml
+    └── docker-compose.yml
+
+1 directory, 2 files
+```
+
+The `config.toml` file is the `devbox` configuration for your project. In it
+contains configuration for all of the services in your project. It looks like
+this:
+
+```toml
+volumes = [
+  "mysql",
+  "postgres"
+]
+
+[services]
+example = { git = "git@github.com:user/example" }
+```
+
+#### Volumes
+
+Volumes is an array of `docker` volume names used in your project. These volumes
+will be created by `devbox build`.
+
+#### Services
+
+Services are declared by specifying the name of the service and configuring
+a `git` repository URL where the service can be cloned from. When working with
+a local service on disk, specify the `path` option along with the absolute path
+to the service on disk.
 
 ### Build the Docker Containers
 
@@ -60,15 +101,15 @@ Set up the networking, pull down the latest docker images, and build the docker
 containers:
 
 ```shell
-$ devbox build
+$ devbox build -p example
 ```
 
-## Running Dev Box
+## Running devbox
 
 From the root of the repository:
 
 ```shell
-$ devbox start
+$ devbox start -p example
 ```
 
 This will run the support services.
@@ -78,13 +119,12 @@ The `ps` command can be used to list the running containers and confirm they hav
 ```shell
 λ devbox ps
 CONTAINER ID        NAMES                    STATUS              PORTS
-8fd9e21e74dc        devbox_kafka_1           Up 6 minutes        127.0.0.1:9092->9092/tcp
-66520b2ba9cc        devbox_zookeeper_1       Up 6 minutes        2888/tcp, 127.0.0.1:2181->2181/tcp, 3888/tcp
-f8f37e7baa69        devbox_mysql_1           Up 6 minutes        127.0.0.1:3306->3306/tcp
-d5488c888567        devbox_ssh_agent_1       Up 6 minutes
-ec04a7699e15        devbox_postgres_1        Up 6 minutes        127.0.0.1:5432->5432/tcp
-45abb5cdd9ad        devbox_elasticsearch_1   Up 6 minutes        127.0.0.1:9200->9200/tcp, 9300/tcp
-fe8b9d71bf70        devbox_redis_1           Up 6 minutes        127.0.0.1:6379->6379/tcp
+8fd9e21e74dc        example_kafka_1          Up 6 minutes        127.0.0.1:9092->9092/tcp
+66520b2ba9cc        example_zookeeper_1      Up 6 minutes        2888/tcp, 127.0.0.1:2181->2181/tcp, 3888/tcp
+f8f37e7baa69        example_mysql_1          Up 6 minutes        127.0.0.1:3306->3306/tcp
+ec04a7699e15        example_postgres_1       Up 6 minutes        127.0.0.1:5432->5432/tcp
+45abb5cdd9ad        example_elasticsearch_1  Up 6 minutes        127.0.0.1:9200->9200/tcp, 9300/tcp
+fe8b9d71bf70        example_redis_1          Up 6 minutes        127.0.0.1:6379->6379/tcp
 ```
 
 ### Reading Logs
@@ -93,30 +133,26 @@ Each service runs in its own docker container and writes its logs to standard
 output. In order to view the latest log output:
 
 ```shell
-$ docker logs devbox_mysql_1
+$ docker logs -p example mysql
 ```
 
 To stream the logs in real time use the `--follow` flag:
 
 ```shell
-$ docker logs -f devbox_postgres_1
+$ docker logs -p example -f postgres
 ```
 
 **Note:** use `docker ps` to see a list of docker container names.
 
-### Stopping Dev Box
+### Stopping devbox
 
 From the root of the repository:
 
 ```shell
-$ devbox stop
+$ devbox stop -p example
 ```
 
-This will stop the docker containers.
-
-**Note:** Dev Box uses separate volumes to store MySQL and PostgreSQL data. The
-`stop` command is safe to use and that data will be available again next time
-Dev Box is started with the `start` command.
+This will stop the docker containers in the `example` project.
 
 ## Troubleshooting
 
