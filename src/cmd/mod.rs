@@ -45,12 +45,12 @@ pub fn build(args: &ArgMatches) -> Result<()> {
         let _ = service.clone_repo();
         service.build()
     } else {
-        let _ = clone_services(&mut project);
-        let _ = build_services(&mut project);
         let _ = create_network(&project);
         let _ = create_volumes(&project);
         let _ = pull_latest_images();
         let _ = build_images();
+        let _ = clone_services(&mut project);
+        let _ = build_services(&mut project);
 
         Ok(())
     }
