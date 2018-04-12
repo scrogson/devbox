@@ -3,10 +3,10 @@ use prelude::*;
 
 pub fn main() -> CliResult {
     let args = cli().get_matches();
-    execute_subcommand(args)
+    execute_subcommand(&args)
 }
 
-fn execute_subcommand(args: ArgMatches) -> CliResult {
+fn execute_subcommand(args: &ArgMatches) -> CliResult {
     let (cmd, args) = match args.subcommand() {
         (cmd, Some(args)) => (cmd, args),
         _ => {
