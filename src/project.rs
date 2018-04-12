@@ -152,6 +152,42 @@ impl Project {
         })
     }
 
+    pub fn init(name: &str) -> Result<()> {
+        let devbox_dir = devbox_dir(name)?;
+        let toml_config = toml_config_path(name)?;
+        let yaml_config = yaml_config_path(name)?;
+
+        ensure_directory_exists(&devbox_dir);
+        create_file_if_not_exists(&toml_config, TOML_TEMPLATE)?;
+        create_file_if_not_exists(&yaml_config, COMPOSE_YAML_TEMPLATE)?;
+
+        Ok(())
+    }
+
+    pub fn init_from_git(name: &str, git: &str) -> Result<()> {
+        let dir = TempDir::new("devbox")?;
+
+        let _ = Command::new("git")
+            .arg("clone")
+            .arg(git)
+            .arg(&dir.path())
+            .spawn()?
+            .wait();
+
+        let toml_path = &dir.path().join("config.toml");
+        let yaml_path = &dir.path().join("docker-compose.yml");
+        let toml_contents = read_file(&toml_path)?;
+        let yaml_contents = read_file(&yaml_path)?;
+
+        ensure_directory_exists(&devbox_dir(name)?);
+        create_file_if_not_exists(&toml_config_path(name)?, &toml_contents)?;
+        create_file_if_not_exists(&yaml_config_path(name)?, &yaml_contents)?;
+
+        dir.close()?;
+
+        Ok(())
+    }
+
     pub fn find_service(&mut self, name: &str) -> Result<&mut Service> {
         let service = self.services
             .iter_mut()
@@ -175,42 +211,6 @@ fn parse_toml_config(path: PathBuf) -> Result<toml::Value> {
     let value = toml::from_str::<toml::Value>(&contents)?;
 
     Ok(value)
-}
-
-pub fn init(name: &str) -> Result<()> {
-    let devbox_dir = devbox_dir(name)?;
-    let toml_config = toml_config_path(name)?;
-    let yaml_config = yaml_config_path(name)?;
-
-    ensure_directory_exists(&devbox_dir);
-    create_file_if_not_exists(&toml_config, TOML_TEMPLATE)?;
-    create_file_if_not_exists(&yaml_config, COMPOSE_YAML_TEMPLATE)?;
-
-    Ok(())
-}
-
-pub fn init_from_git(name: &str, git: &str) -> Result<()> {
-    let dir = TempDir::new("devbox")?;
-
-    let _ = Command::new("git")
-        .arg("clone")
-        .arg(git)
-        .arg(&dir.path())
-        .spawn()?
-        .wait();
-
-    let toml_path = &dir.path().join("config.toml");
-    let yaml_path = &dir.path().join("docker-compose.yml");
-    let toml_contents = read_file(&toml_path)?;
-    let yaml_contents = read_file(&yaml_path)?;
-
-    ensure_directory_exists(&devbox_dir(name)?);
-    create_file_if_not_exists(&toml_config_path(name)?, &toml_contents)?;
-    create_file_if_not_exists(&yaml_config_path(name)?, &yaml_contents)?;
-
-    dir.close()?;
-
-    Ok(())
 }
 
 pub fn devbox_dir(name: &str) -> Result<PathBuf> {

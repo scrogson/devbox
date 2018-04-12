@@ -1,4 +1,6 @@
 use std::collections::BTreeMap;
+use std::env;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -6,17 +8,32 @@ use std::process::Command;
 
 use colored::*;
 use failure::ResultExt;
-use prettytable::Table;
 use prettytable::format;
+use prettytable::Table;
 use toml;
 
-use cmd;
 use errors::*;
 use project;
 use task::Task;
 
 const COMPOSE_PATH: &str = ".devbox/docker-compose.yml";
 const TOML_PATH: &str = ".devbox/config.toml";
+
+pub fn cmd<S: AsRef<OsStr>>(program: S, service: &Service) -> Command {
+    let devbox_compose_file = env::var("COMPOSE_FILE").unwrap();
+    let service_compose_file = service.devbox_compose_file();
+
+    let mut cmd = Command::new(program);
+
+    cmd.arg("-f")
+        .arg(&devbox_compose_file)
+        .arg("-f")
+        .arg(&service_compose_file)
+        .arg("--project-directory")
+        .arg(&service_compose_file.parent().unwrap());
+
+    cmd
+}
 
 #[derive(Clone, Debug)]
 pub struct Service {
@@ -54,7 +71,7 @@ impl Service {
 
     pub fn start(&self) -> Result<()> {
         if self.devbox_compose_file().exists() {
-            let _ = cmd::new("docker-compose", self)
+            let _ = cmd("docker-compose", self)
                 .arg("up")
                 .arg("-d")
                 .arg(&self.name)
@@ -72,7 +89,7 @@ impl Service {
 
     pub fn stop(&self) -> Result<()> {
         if self.devbox_compose_file().exists() {
-            let _ = cmd::new("docker-compose", self)
+            let _ = cmd("docker-compose", self)
                 .arg("stop")
                 .arg(&self.name)
                 .spawn()?
@@ -91,7 +108,7 @@ impl Service {
         if self.devbox_compose_file().exists() {
             self.run_lifecycle_hooks("before-build")?;
 
-            let _ = cmd::new("docker-compose", self)
+            let _ = cmd("docker-compose", self)
                 .arg("build")
                 .arg(&self.name)
                 .spawn()?
@@ -195,7 +212,7 @@ impl Service {
 
     fn exec_task(&self, task: &Task) -> Result<()> {
         if self.devbox_compose_file().exists() {
-            let _ = cmd::new("docker-compose", self)
+            let _ = cmd("docker-compose", self)
                 .arg("exec")
                 .arg(&self.name)
                 .args(&task.exec)
@@ -213,7 +230,7 @@ impl Service {
 
     fn run_task(&self, task: &Task) -> Result<()> {
         if self.devbox_compose_file().exists() {
-            let _ = cmd::new("docker-compose", self)
+            let _ = cmd("docker-compose", self)
                 .arg("run")
                 .arg("--rm")
                 .arg(&self.name)
