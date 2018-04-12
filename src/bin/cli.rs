@@ -1,5 +1,5 @@
-use prelude::*;
 use commands;
+use prelude::*;
 
 pub fn main() -> CliResult {
     let args = cli().get_matches();

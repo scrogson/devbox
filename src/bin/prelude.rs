@@ -1,13 +1,12 @@
 use clap::{self, SubCommand};
-pub use std::process::{Command, Stdio};
-pub use devbox::{Project, Result};
 pub use clap::{AppSettings, ArgMatches};
+pub use devbox::{Project, Result};
 pub use failure::ResultExt;
+pub use std::process::{Command, Stdio};
 
 pub type App = clap::App<'static, 'static>;
 pub type Arg = clap::Arg<'static, 'static>;
 pub type CliResult = Result<()>;
-
 
 pub trait ArgMatchesExt {
     fn project(&self) -> Result<Project> {

@@ -27,7 +27,7 @@ pub fn builtin_exec(cmd: &str) -> Option<fn(&ArgMatches) -> CliResult> {
         "stop" => stop::exec,
         "tasks" => tasks::exec,
         "update" => update::exec,
-        _ => return None
+        _ => return None,
     };
     Some(f)
 }

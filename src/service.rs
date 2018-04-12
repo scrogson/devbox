@@ -8,8 +8,8 @@ use std::process::Command;
 
 use colored::*;
 use failure::ResultExt;
-use prettytable::Table;
 use prettytable::format;
+use prettytable::Table;
 use toml;
 
 use errors::*;

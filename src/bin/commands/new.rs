@@ -21,6 +21,6 @@ pub fn exec(args: &ArgMatches) -> CliResult {
         .ok_or_else(|| format_err!("Missing project name"))?;
     match args.value_of("git") {
         Some(repo) => Project::init_from_git(name, repo),
-        None => Project::init(name)
+        None => Project::init(name),
     }
 }

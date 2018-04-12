@@ -50,4 +50,3 @@ fn remove_images() -> CliResult {
 
     Ok(())
 }
-

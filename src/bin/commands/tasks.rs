@@ -5,13 +5,11 @@ pub fn cli() -> App {
         .about("List and execute tasks for a service")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(
-            subcommand("list")
-                .about("List tasks for a service")
-                .arg(
-                    Arg::with_name("SERVICE")
-                        .required(true)
-                        .help("The name of the service"),
-                ),
+            subcommand("list").about("List tasks for a service").arg(
+                Arg::with_name("SERVICE")
+                    .required(true)
+                    .help("The name of the service"),
+            ),
         )
         .subcommand(
             subcommand("exec")
