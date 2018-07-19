@@ -132,16 +132,16 @@ Each service runs in its own docker container and writes its logs to standard
 output. In order to view the latest log output:
 
 ```shell
-$ docker logs -p example mysql
+$ devbox logs -p example mysql
 ```
 
 To stream the logs in real time use the `--follow` flag:
 
 ```shell
-$ docker logs -p example -f postgres
+$ devbox logs -p example -f postgres
 ```
 
-**Note:** use `docker ps` to see a list of docker container names.
+**Note:** use `devbox ps` to see a list of docker container names.
 
 ### Stopping devbox
 
@@ -152,6 +152,12 @@ $ devbox stop -p example
 ```
 
 This will stop the docker containers in the `example` project.
+
+### DEVBOX_PROJECT
+
+Most of the time, you'll be using only a single devbox project at a time.
+Instead of explicitly passing `-p <project>` for each command, `devbox` can
+read your project name from the `DEVBOX_PROJECT` environment variable.
 
 ## Troubleshooting
 
@@ -168,23 +174,3 @@ This is likely caused by Docker not having access to enough memory. You can
 change this in Docker preferences in the `Advanced` tab. By default Docker is
 set to request 2GB of memory. You may need to bump this to at least 4GB in order
 to run all services provided by `devbox`.
-
-### Problems connecting to MySQL
-
-If using Docker for Mac, the MySQL instance is reachable on `127.0.0.1` on the
-default `3306` port.
-
-    mysql -h 127.0.0.1 -u root -p
-
-The PostgreSQL container creates a `postgres` user with a password of `postgres`.
-See the `.env` for the latest values.
-
-### Problems connecting to PostgreSQL
-
-If using Docker for Mac, the PostgreSQL instance is reachable on `127.0.0.1` on the
-default `5432` port.
-
-    psql -h 127.0.0.1 -U postgres
-
-The PostgreSQL container creates a `postgres` user with a `postgres` password.
-See the `.env` for the latest values.
