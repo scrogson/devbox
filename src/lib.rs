@@ -1,6 +1,7 @@
 #![recursion_limit = "1024"]
 
 extern crate colored;
+extern crate dirs;
 #[macro_use]
 extern crate failure;
 #[macro_use]

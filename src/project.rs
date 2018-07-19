@@ -4,6 +4,7 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use dirs::home_dir;
 use failure::ResultExt;
 use tempdir::TempDir;
 use toml;
@@ -214,7 +215,7 @@ fn parse_toml_config(path: PathBuf) -> Result<toml::Value> {
 }
 
 pub fn devbox_dir(name: &str) -> Result<PathBuf> {
-    let home = env::home_dir().ok_or_else(|| format_err!("unable to determine home directory"))?;
+    let home = home_dir().ok_or_else(|| format_err!("unable to determine home directory"))?;
     Ok(home.join(".config").join("devbox").join(name))
 }
 
