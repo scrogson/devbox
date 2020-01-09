@@ -189,6 +189,31 @@ impl Project {
         Ok(())
     }
 
+    pub fn update_from_git(name: &str, git: &str) -> Result<()> {
+
+        let dir = TempDir::new("devbox")?;
+
+        let _ = Command::new("git")
+            .arg("clone")
+            .arg(git)
+            .arg(&dir.path())
+            .spawn()?
+            .wait();
+
+        let toml_path = &dir.path().join("config.toml");
+        let yaml_path = &dir.path().join("docker-compose.yml");
+        let toml_contents = read_file(&toml_path)?;
+        let yaml_contents = read_file(&yaml_path)?;
+
+        ensure_directory_exists(&devbox_dir(name)?);
+        create_or_overwrite_file(&toml_config_path(name)?, &toml_contents)?;
+        create_or_overwrite_file(&yaml_config_path(name)?, &yaml_contents)?;
+
+        dir.close()?;
+
+        Ok(())
+    }
+
     pub fn find_service(&mut self, name: &str) -> Result<&mut Service> {
         let service = self.services
             .iter_mut()
@@ -251,6 +276,20 @@ fn create_file_if_not_exists(path: &Path, content: &str) -> Result<()> {
         println!("Creating file {:?}", &path);
 
         file.write_all(content.as_bytes())?;
+    }
+
+    Ok(())
+}
+
+fn create_or_overwrite_file(path: &Path, content: &str) -> Result<()> {
+    if path.exists() {
+        let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
+
+        println!("Overwriting file {:?}", &path);
+
+        file.write_all(content.as_bytes())?;
+    } else {
+        create_file_if_not_exists(&path, &content)?;
     }
 
     Ok(())

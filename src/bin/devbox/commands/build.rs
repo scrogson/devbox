@@ -12,7 +12,7 @@ pub fn exec(args: &ArgMatches) -> CliResult {
     let mut project = args.project()?;
 
     if let Some(name) = args.value_of("SERVICE") {
-        let mut service = project.find_service(name)?;
+        let service = project.find_service(name)?;
         let _ = service.clone_repo();
         service.build()
     } else {
