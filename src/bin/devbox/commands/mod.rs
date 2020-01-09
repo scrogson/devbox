@@ -8,6 +8,7 @@ pub fn builtins() -> Vec<App> {
         logs::cli(),
         new::cli(),
         ps::cli(),
+        renew::cli(),
         start::cli(),
         stop::cli(),
         tasks::cli(),
@@ -23,6 +24,7 @@ pub fn builtin_exec(cmd: &str) -> Option<fn(&ArgMatches) -> CliResult> {
         "logs" => logs::exec,
         "new" => new::exec,
         "ps" => ps::exec,
+        "renew" => renew::exec,
         "start" => start::exec,
         "stop" => stop::exec,
         "tasks" => tasks::exec,
@@ -38,6 +40,7 @@ pub mod doctor;
 pub mod logs;
 pub mod new;
 pub mod ps;
+pub mod renew;
 pub mod start;
 pub mod stop;
 pub mod tasks;
