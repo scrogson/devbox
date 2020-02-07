@@ -1,5 +1,5 @@
-use cli;
-use prelude::*;
+use crate::cli;
+use crate::prelude::*;
 
 pub fn cli() -> App {
     subcommand("completions")

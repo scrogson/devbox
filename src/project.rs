@@ -9,8 +9,8 @@ use failure::ResultExt;
 use tempdir::TempDir;
 use toml;
 
-use errors::*;
-use service::Service;
+use crate::errors::*;
+use crate::service::Service;
 
 const TOML_TEMPLATE: &str = r#"# Example devbox project configuration
 #

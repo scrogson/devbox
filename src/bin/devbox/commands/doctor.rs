@@ -1,4 +1,4 @@
-use prelude::*;
+use crate::prelude::*;
 
 pub fn cli() -> App {
     subcommand("doctor").about("Check your system for potential problems")

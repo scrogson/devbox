@@ -1,5 +1,5 @@
-use commands;
-use prelude::*;
+use crate::commands;
+use crate::prelude::*;
 
 pub fn main() -> CliResult {
     let args = cli().get_matches();

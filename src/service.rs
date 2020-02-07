@@ -12,9 +12,9 @@ use prettytable::format;
 use prettytable::Table;
 use toml;
 
-use errors::*;
-use project;
-use task::Task;
+use crate::errors::*;
+use crate::project;
+use crate::task::Task;
 
 const COMPOSE_PATH: &str = ".devbox/docker-compose.yml";
 const TOML_PATH: &str = ".devbox/config.toml";
