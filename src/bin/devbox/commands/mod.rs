@@ -15,7 +15,7 @@ pub fn builtins() -> Vec<App> {
     ]
 }
 
-pub fn builtin_exec(cmd: &str) -> Option<fn(&ArgMatches) -> CliResult> {
+pub fn builtin_exec(cmd: &str) -> Option<fn(&ArgMatches<'_>) -> CliResult> {
     let f = match cmd {
         "build" => build::exec,
         "completions" => completions::exec,

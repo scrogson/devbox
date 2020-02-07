@@ -12,7 +12,7 @@ pub fn cli() -> App {
         )
 }
 
-pub fn exec(args: &ArgMatches) -> CliResult {
+pub fn exec(args: &ArgMatches<'_>) -> CliResult {
     let shell = args.value_of("SHELL")
         .ok_or_else(|| format_err!("Missing `SHELL` argument"))?
         .parse()

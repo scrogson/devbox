@@ -4,7 +4,7 @@ pub fn cli() -> App {
     subcommand("doctor").about("Check your system for potential problems")
 }
 
-pub fn exec(_args: &ArgMatches) -> CliResult {
+pub fn exec(_args: &ArgMatches<'_>) -> CliResult {
     print_command_status("docker");
     print_command_status("docker-compose");
 

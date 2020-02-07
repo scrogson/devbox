@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate clap;
-extern crate colored;
-extern crate devbox;
+
+
 #[macro_use]
 extern crate failure;
-extern crate rayon;
+
 
 use devbox::*;
 

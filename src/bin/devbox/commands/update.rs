@@ -11,7 +11,7 @@ pub fn cli() -> App {
         .arg(project())
 }
 
-pub fn exec(args: &ArgMatches) -> CliResult {
+pub fn exec(args: &ArgMatches<'_>) -> CliResult {
     let mut project = args.project()?;
     let name = args.value_of("SERVICE")
         .ok_or_else(|| format_err!("Error parsing `SERVICE`"))?;

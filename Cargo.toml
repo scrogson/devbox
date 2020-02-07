@@ -2,6 +2,7 @@
 name = "devbox"
 version = "0.1.0"
 authors = ["Sonny Scroggin <sonny@scrogg.in>"]
+edition = "2018"
 
 [dependencies]
 clap = "2"

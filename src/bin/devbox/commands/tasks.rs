@@ -29,7 +29,7 @@ pub fn cli() -> App {
         .arg(project())
 }
 
-pub fn exec(matches: &ArgMatches) -> CliResult {
+pub fn exec(matches: &ArgMatches<'_>) -> CliResult {
     let mut project = matches.project()?;
 
     let subcmd = matches

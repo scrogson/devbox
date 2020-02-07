@@ -27,7 +27,7 @@ pub fn cli() -> App {
         .arg(project())
 }
 
-pub fn exec(args: &ArgMatches) -> CliResult {
+pub fn exec(args: &ArgMatches<'_>) -> CliResult {
     let mut project = args.project()?;
 
     let compose_file = &project.docker_compose_file.clone();

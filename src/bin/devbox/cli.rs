@@ -6,7 +6,7 @@ pub fn main() -> CliResult {
     execute_subcommand(&args)
 }
 
-fn execute_subcommand(args: &ArgMatches) -> CliResult {
+fn execute_subcommand(args: &ArgMatches<'_>) -> CliResult {
     let (cmd, args) = match args.subcommand() {
         (cmd, Some(args)) => (cmd, args),
         _ => {

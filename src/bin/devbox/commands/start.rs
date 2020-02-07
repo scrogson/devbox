@@ -7,7 +7,7 @@ pub fn cli() -> App {
         .arg(project())
 }
 
-pub fn exec(args: &ArgMatches) -> CliResult {
+pub fn exec(args: &ArgMatches<'_>) -> CliResult {
     let mut project = args.project()?;
 
     match args.value_of("SERVICE") {

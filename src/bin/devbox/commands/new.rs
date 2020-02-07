@@ -16,7 +16,7 @@ pub fn cli() -> App {
         )
 }
 
-pub fn exec(args: &ArgMatches) -> CliResult {
+pub fn exec(args: &ArgMatches<'_>) -> CliResult {
     let name = args.value_of("PROJECT")
         .ok_or_else(|| format_err!("Missing project name"))?;
     match args.value_of("git") {

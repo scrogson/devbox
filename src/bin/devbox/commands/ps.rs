@@ -4,7 +4,7 @@ pub fn cli() -> App {
     subcommand("ps").about("Display running services")
 }
 
-pub fn exec(_args: &ArgMatches) -> CliResult {
+pub fn exec(_args: &ArgMatches<'_>) -> CliResult {
     let _ = docker()
         .args(&[
             "ps",
