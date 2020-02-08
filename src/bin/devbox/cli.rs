@@ -24,8 +24,8 @@ fn execute_subcommand(args: &ArgMatches<'_>) -> CliResult {
 
 pub fn cli() -> App {
     App::new("devbox")
-        .version(crate_version!())
-        .author(crate_authors!())
+        .version(clap::crate_version!())
+        .author(clap::crate_authors!())
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .setting(AppSettings::VersionlessSubcommands)
         .setting(AppSettings::UnifiedHelpMessage)

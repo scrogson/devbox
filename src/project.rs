@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use dirs::home_dir;
-use failure::ResultExt;
+use failure::{format_err, ResultExt};
 use tempdir::TempDir;
 use toml;
 

@@ -7,10 +7,8 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use colored::*;
-use failure::ResultExt;
-use prettytable::format;
-use prettytable::Table;
-use toml;
+use failure::{format_err, ResultExt};
+use prettytable::{cell, format, row, Table};
 
 use crate::errors::*;
 use crate::project;

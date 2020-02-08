@@ -1,7 +1,7 @@
 use clap::{self, SubCommand};
 pub use clap::{AppSettings, ArgMatches};
 pub use devbox::{Project, Result};
-pub use failure::ResultExt;
+pub use failure::{format_err, ResultExt};
 pub use std::process::{Command, Stdio};
 
 pub type App = clap::App<'static, 'static>;
